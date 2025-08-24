@@ -1,18 +1,21 @@
-from functions.get_files_info import get_files_info
+from functions.get_file_content import get_file_content
 
 def test():
-    dir_tests = {"calculator": [(".", "Result for current directory:\n - main.py: file_size=576 bytes, is_dir=False\n - tests.py: file_size=1343 bytes, is_dir=False\n - pkg: file_size=92 bytes, is_dir=True")
-                                ,("pkg", "Result for 'pkg' directory:\n - calculator.py: file_size=1739 bytes, is_dir=False\n - render.py: file_size=768 bytes, is_dir=False"), 
-                                ("/bin", "Result for '/bin' directory:\nError: Cannot list '/bin' as it is outside the permitted working directory"), 
-                                ("../", "Result for '../' directory:\nError: Cannot list '../' as it is outside the permitted working directory")]}
-    for working_dir in dir_tests:
-        print(f"Working directory: {working_dir}")
-        for dir in dir_tests[working_dir]:
-            print(f"Directory: {dir[0]}")
-            print(f"Expected:\n{dir[1]}")
-            result = get_files_info(working_dir, dir[0])
-            print(f"Actual:{result}")
+    result = get_file_content("calculator", "main.py")
+    print("Result of calculator and main.py")
+    print(result)
 
+    result = get_file_content("calculator", "pkg/calculator.py")
+    print("Result of calculator and pkg/calculator.py")
+    print(result)
+
+    result = get_file_content("calculator", "/bin/cat")
+    print("Result of calculator and /bin/cat")
+    print(result)
+
+    result = get_file_content("calculator", "pkg/does_not_exist.py")
+    print("Result of calculator and pkg/does_not_exist.py")
+    print(result)
 
 if __name__ == "__main__":
     test()
