@@ -3,6 +3,8 @@ import sys
 from dotenv import load_dotenv
 from google import genai
 from google.genai import types
+from config import SYSTEM_PROMPT
+from call_functions import available_functions
 
 def main():
     
@@ -12,9 +14,9 @@ def main():
         if not arg.startswith("--"):
             args.append(arg)
 
-    if args:
+    if not args:
         print("AI Code Assistant")
-        print('\nUsage: python main.py "your prompt here" [--verbose]')
+        print('Usage: python main.py "your prompt here" [--verbose]')
         print('Example: python main.py "How do I build a calculator app?"')
         sys.exit(1)
 
@@ -34,7 +36,10 @@ def main():
 
 def generate_response(client, messages, verbose):
     
-    response = client.models.generate_content(model="gemini-2.0-flash-001", contents=messages)
+    response = client.models.generate_content(model="gemini-2.0-flash-001", 
+                                              contents=messages, 
+                                              config=types.GenerateContentConfig(tools=[available_functions], system_instruction=SYSTEM_PROMPT)
+                                              )
 
     prompt_tokens = response.usage_metadata.prompt_token_count
     response_tokens = response.usage_metadata.candidates_token_count
@@ -43,8 +48,13 @@ def generate_response(client, messages, verbose):
         print(f"Prompt tokens: {prompt_tokens}")
         print(f"Response tokens: {response_tokens}")
 
-    print("Response:")
-    print(response.text)
+    function_calls = response.function_calls
+
+    if not function_calls:
+        return f"Response:\n{response.txt}"
+        
+    for function in function_calls:
+            print(f"Calling function: {function.name}({function.args})")    
 
 
 if __name__ == "__main__":
