@@ -4,7 +4,7 @@ from dotenv import load_dotenv
 from google import genai
 from google.genai import types
 from config import SYSTEM_PROMPT
-from call_functions import available_functions
+from call_functions import available_functions, call_function
 
 def main():
     
@@ -51,11 +51,16 @@ def generate_response(client, messages, verbose):
     function_calls = response.function_calls
 
     if not function_calls:
-        return f"Response:\n{response.txt}"
+        return f"Response:\n{response.text}"
         
     for function in function_calls:
-            print(f"Calling function: {function.name}({function.args})")    
-
+            # print(f"Calling function: {function.name}({function.args})")
+            func_response = call_function(function, verbose)
+            if not func_response.parts[0].function_response.response:
+                raise Exception(f"Error: no response from {function.name}.")
+            if verbose:
+                print(f"-> {func_response.parts[0].function_response.response['result']}")
+            
 
 if __name__ == "__main__":
     main()

@@ -16,10 +16,10 @@ schema_get_file_content = types.FunctionDeclaration(
     ),
 )
 
-def get_file_content(working_dir, file_path):
+def get_file_content(working_directory, file_path):
     try:
-        full_file_path = os.path.join(working_dir, file_path)
-        abspath_wdir = os.path.abspath(working_dir) + "/"
+        full_file_path = os.path.join(working_directory, file_path)
+        abspath_wdir = os.path.abspath(working_directory) + "/"
         abspath_file = os.path.abspath(full_file_path)
 
         if not abspath_file.startswith(abspath_wdir):
