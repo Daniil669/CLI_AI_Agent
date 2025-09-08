@@ -31,7 +31,14 @@ def main():
     if verbose:
          print(f"User prompt: {prompt_text}")
 
-    generate_response(client, messages, verbose)
+    for _ in range(0, 20):
+        try:
+            response = generate_response(client, messages, verbose)
+            if response:
+                print(f"{response}")
+                break
+        except Exception as e:
+            print(f"{e}")
     
 
 def generate_response(client, messages, verbose):
@@ -40,6 +47,10 @@ def generate_response(client, messages, verbose):
                                               contents=messages, 
                                               config=types.GenerateContentConfig(tools=[available_functions], system_instruction=SYSTEM_PROMPT)
                                               )
+    
+    agent_messages = response.candidates
+    for agent_message in agent_messages:
+        messages.append(agent_message.content)
 
     prompt_tokens = response.usage_metadata.prompt_token_count
     response_tokens = response.usage_metadata.candidates_token_count
@@ -54,12 +65,15 @@ def generate_response(client, messages, verbose):
         return f"Response:\n{response.text}"
         
     for function in function_calls:
-            # print(f"Calling function: {function.name}({function.args})")
-            func_response = call_function(function, verbose)
-            if not func_response.parts[0].function_response.response:
+            func_call_response = call_function(function, verbose)
+            func_response = func_call_response.parts[0].function_response.response
+            if not func_response:
                 raise Exception(f"Error: no response from {function.name}.")
             if verbose:
-                print(f"-> {func_response.parts[0].function_response.response['result']}")
+                print(f"-> {func_response['result']}")
+            
+            user_message = types.Content(parts=[types.Part(text=func_response['result'])], role="user")
+            messages.append(user_message)
             
 
 if __name__ == "__main__":
